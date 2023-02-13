@@ -139,17 +139,27 @@ public class Main {
 
     private static void task9() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        System.out.println(animals.stream()
+                .map(animal -> animal.getBread().toCharArray())
+                .min((x, y) -> x.length - y.length)
+                .get()
+                .length
+        );
     }
 
     private static void task10() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        System.out.println(animals.stream()
+                .collect(Collectors.summarizingInt(Animal::getAge))
+                .getSum());
     }
 
     private static void task11() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        //        animals.stream() Продолжить ...
+        System.out.println(animals.stream()
+                .filter(animal -> "Indonesian".equals(animal.getOrigin()))
+                .collect(Collectors.summarizingInt(Animal::getAge))
+                .getSum());
     }
 
     private static void task12() throws IOException {
