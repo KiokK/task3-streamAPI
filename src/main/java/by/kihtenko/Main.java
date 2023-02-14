@@ -9,6 +9,7 @@ import by.kihtenko.util.Util;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -152,7 +153,27 @@ public class Main {
 
     private static void task13() throws IOException {
         List<House> houses = Util.getHouses();
-        //        Продолжить...
+        LocalDate nowDate = LocalDate.now();
+        houses.stream()
+                .flatMap(house -> house.getPersonList().stream()
+                        .map(person -> Map.entry("Hospital".equals(house.getBuildingType()) ? 0 :
+                                (Period.between(person.getDateOfBirth(), nowDate).getYears() < 18
+                                        || ("Female".equals(person.getGender())
+                                            && Period.between(person.getDateOfBirth(), nowDate).getYears() >= 58)
+                                        || ("Male".equals(person.getGender())
+                                            && Period.between(person.getDateOfBirth(), nowDate).getYears() >= 63) ? 1 : 2), person)))
+                .sorted(Map.Entry.comparingByKey())
+                .map(personEntry -> personEntry.getValue())
+                .limit(500)
+                .forEach(System.out::println);
+
+//        houses.stream()
+//                .collect(Collectors.toMap(u -> "Hospital".equals(u.getBuildingType()), House::getPersonList,
+//                        (u1, u2) -> {
+//                            u1.addAll(u2);
+//                            return u1;
+//                        }))
+//                .forEach((k, v) -> System.out.println(k + " " + v));
     }
 
     private static void task14() throws IOException {
@@ -162,7 +183,8 @@ public class Main {
 
     private static void task15() throws IOException {
         List<Flower> flowers = Util.getFlowers();
-        System.out.println(flowers.stream()
+        double waterFor5years = 1.39 * 0.001  * 365 * 5;
+                System.out.println(flowers.stream()
                 .sorted(Comparator.comparing(Flower::getOrigin).reversed())
                 .sorted(Comparator.comparing(Flower::getPrice).thenComparing(Flower::getWaterConsumptionPerDay).reversed())
                 .filter(flower -> Pattern.compile("[C-S].*").matcher(flower.getCommonName()).matches())
@@ -171,7 +193,7 @@ public class Main {
                         .stream()
                         .filter(material -> "Glass".equals(material) || "Aluminum".equals(material) || "Steel".equals(material))
                         .collect(Collectors.toList()))
-                .map(flower -> flower.getPrice() + 1.39 * flower.getWaterConsumptionPerDay() * 365 * 5)
+                .map(flower -> flower.getPrice() + flower.getWaterConsumptionPerDay() * waterFor5years)
                 .collect(summingDouble(f -> f)));
         ;
     }
