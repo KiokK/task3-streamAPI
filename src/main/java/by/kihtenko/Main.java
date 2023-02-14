@@ -8,10 +8,13 @@ import by.kihtenko.model.Person;
 import by.kihtenko.util.Util;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.summingDouble;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -50,23 +53,12 @@ public class Main {
 
     private static void task2() throws IOException {
         List<Animal> animals = Util.getAnimals();
-//        animals.stream()
-//            .filter(a -> "Japanese".equals(a.getOrigin()) )
-//                .map(a -> {
-//                    if ("Female".equals(a.getGender()))
-//                            a.setBread(a.getBread().toUpperCase());
-//                    return a;
-//                })
-//                .map(Animal::getBread)
-//                .forEach(System.out::println);
-        animals.stream()
-                .filter(a -> "Japanese".equals(a.getOrigin()) && "Female".equals(a.getGender()))
-                .forEach(a -> a.setBread(a.getBread().toUpperCase()));
         animals.stream()
                 .filter(a -> "Japanese".equals(a.getOrigin()))
-                .map(Animal::getBread)
+                .peek(a -> a.setBread(a.getBread().toUpperCase()))
+                .filter(a -> "Female".equals(a.getGender()))
+                .map(Animal::toString)
                 .forEach(System.out::println);
-
     }
 
     private static void task3() throws IOException {
@@ -89,42 +81,23 @@ public class Main {
 
     private static void task5() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        animals.stream()
-                .filter(a -> "Hungarian".equals(a.getOrigin()) && a.getAge() >= 20 && a.getAge() <= 30)
-                .findAny()
-                .ifPresentOrElse(System.out::println,
-                        () -> {
-                            System.out.println("No");
-                        });
+        System.out.println(animals.stream()
+                .filter(a -> a.getAge() >= 20 && a.getAge() <= 30)
+                .anyMatch(a -> "Hungarian".equals(a.getOrigin())));
     }
 
     private static void task6() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        animals.stream()
-                .filter(a -> !"Female".equals(a.getGender()) && !"Male".equals(a.getGender()))
-                .findAny()
-                .ifPresentOrElse((a) -> {
-                            System.out.println("No");
-                        },
-                        () -> {
-                            System.out.println("Yes");
-                        }
-                        );
+        System.out.println(animals.stream()
+                .allMatch(a -> "Female".equals(a.getGender()) && "Male".equals(a.getGender()))
+        );
     }
 
     private static void task7() throws IOException {
         List<Animal> animals = Util.getAnimals();
-        animals.stream()
-                .filter(a -> "Oceania".equals(a.getOrigin()))
-                .findAny()
-                .ifPresentOrElse((a) -> {
-                            System.out.println("No");
-                        },
-                        () -> {
-                            System.out.println("Yes");
-                        }
-                );
-
+        System.out.println(animals.stream()
+                .noneMatch(a -> "Oceania".equals(a.getOrigin()))
+        );
     }
 
     private static void task8() throws IOException {
@@ -140,11 +113,14 @@ public class Main {
     private static void task9() throws IOException {
         List<Animal> animals = Util.getAnimals();
         System.out.println(animals.stream()
-                .map(animal -> animal.getBread().toCharArray())
+                .map(animal -> animal.getBread())
+                .map(bread -> bread.toCharArray())
                 .min((x, y) -> x.length - y.length)
                 .get()
                 .length
         );
+        //But instead of two? you can have one
+        // .map(animal -> animal.getBread().toCharArray())
     }
 
     private static void task10() throws IOException {
@@ -159,12 +135,19 @@ public class Main {
         System.out.println(animals.stream()
                 .filter(animal -> "Indonesian".equals(animal.getOrigin()))
                 .collect(Collectors.summarizingInt(Animal::getAge))
-                .getSum());
+                .getAverage());
     }
 
     private static void task12() throws IOException {
         List<Person> people = Util.getPersons();
-//        Продолжить...
+        people.stream()
+                .filter(person -> "Male".equals(person.getGender())
+                        && person.getDateOfBirth().plusYears(18).isBefore(LocalDate.now())
+                        && person.getDateOfBirth().plusYears(27).isAfter(LocalDate.now())
+                )
+                .sorted(Comparator.comparing(Person::getRecruitmentGroup))
+                .limit(200)
+                .forEach(System.out::println);
     }
 
     private static void task13() throws IOException {
@@ -179,6 +162,17 @@ public class Main {
 
     private static void task15() throws IOException {
         List<Flower> flowers = Util.getFlowers();
-        //        Продолжить...
+        System.out.println(flowers.stream()
+                .sorted(Comparator.comparing(Flower::getOrigin).reversed())
+                .sorted(Comparator.comparing(Flower::getPrice).thenComparing(Flower::getWaterConsumptionPerDay).reversed())
+                .filter(flower -> Pattern.compile("[C-S].*").matcher(flower.getCommonName()).matches())
+                .filter(flower -> flower.isShadePreferred())
+                .peek(flower -> flower.getFlowerVaseMaterial()
+                        .stream()
+                        .filter(material -> "Glass".equals(material) || "Aluminum".equals(material) || "Steel".equals(material))
+                        .collect(Collectors.toList()))
+                .map(flower -> flower.getPrice() + 1.39 * flower.getWaterConsumptionPerDay() * 365 * 5)
+                .collect(summingDouble(f -> f)));
+        ;
     }
 }

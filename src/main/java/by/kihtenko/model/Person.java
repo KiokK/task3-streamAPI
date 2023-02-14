@@ -108,6 +108,6 @@ public class Person {
     public String toString() {
         return "Person{id=" + id + ", firstName='" + firstName + ", lastName='" + lastName + ", dateOfBirth="
             + dateOfBirth + ", email='" + email + ", gender='" + gender + ", recruitmentGroup=" + recruitmentGroup
-            + ", city='" + city + ", occupation='" + occupation;
+            + ", city='" + city + ", occupation='" + occupation + "'}";
     }
 }
