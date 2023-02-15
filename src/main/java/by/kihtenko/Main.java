@@ -1,10 +1,6 @@
 package by.kihtenko;
 
-import by.kihtenko.model.Animal;
-import by.kihtenko.model.Car;
-import by.kihtenko.model.Flower;
-import by.kihtenko.model.House;
-import by.kihtenko.model.Person;
+import by.kihtenko.model.*;
 import by.kihtenko.util.Util;
 
 import java.io.IOException;
@@ -35,6 +31,7 @@ public class Main {
         task13();
         task14();
         task15();
+        task16();
     }
 
 
@@ -227,8 +224,8 @@ public class Main {
 
     private static void task15() throws IOException {
         List<Flower> flowers = Util.getFlowers();
-        double waterFor5years = 1.39 * 0.001  * 365 * 5;
-                System.out.println(flowers.stream()
+        double waterFor5years = 1.39 * 0.001 * 365 * 5;
+        System.out.println(flowers.stream()
                 .sorted(Comparator.comparing(Flower::getOrigin).reversed())
                 .sorted(Comparator.comparing(Flower::getPrice).thenComparing(Flower::getWaterConsumptionPerDay).reversed())
                 .filter(flower -> Pattern.compile("[C-S].*").matcher(flower.getCommonName()).matches())
@@ -240,5 +237,31 @@ public class Main {
                 .map(flower -> flower.getPrice() + flower.getWaterConsumptionPerDay() * waterFor5years)
                 .collect(summingDouble(f -> f)));
         ;
+    }
+
+    private static void task16() throws IOException {
+        List<Owner> owners = Util.getOwners();
+        LocalDate nowDate = LocalDate.now();
+
+        owners.stream()
+                .flatMap(owner -> owner.getAnimals().stream()
+                        .map(animal -> Map.entry(animal, owner.getPerson())))
+                .filter(animalPersonEntry ->
+                        ("Female".equals(animalPersonEntry.getValue().getGender())
+                            && !Pattern.compile("[L-Z].*").matcher(animalPersonEntry.getKey().getBread()).matches())
+                        || ("Male".equals(animalPersonEntry.getValue().getGender())
+                            && !Pattern.compile("[A-K].*").matcher(animalPersonEntry.getKey().getBread()).matches())
+                        || animalPersonEntry.getKey().getAge() > 35
+                        || Period.between(animalPersonEntry.getValue().getDateOfBirth(), nowDate).getYears() < 18)
+                .collect(Collectors.groupingBy(Map.Entry::getValue,
+                        Collectors.mapping(Map.Entry::getKey, Collectors.toList())))
+                .entrySet().stream()
+                .peek(animalPersonEntry -> {
+                    if ("Female".equals(animalPersonEntry.getKey().getGender()))
+                        animalPersonEntry.getKey().setGender("Male");
+                    if ("Male".equals(animalPersonEntry.getKey().getGender()))
+                        animalPersonEntry.getKey().setGender("Female"); })
+                .sorted((o1, o2) -> o1.getKey().getId() - o2.getKey().getId())
+                .forEachOrdered( e -> System.out.println(e.getKey() + " COUNT= " + e.getValue().stream().count() + "\n"));
     }
 }
