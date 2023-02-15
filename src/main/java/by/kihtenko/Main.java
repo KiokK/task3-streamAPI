@@ -228,7 +228,7 @@ public class Main {
         System.out.println(flowers.stream()
                 .sorted(Comparator.comparing(Flower::getOrigin).reversed())
                 .sorted(Comparator.comparing(Flower::getPrice).thenComparing(Flower::getWaterConsumptionPerDay).reversed())
-                .filter(flower -> Pattern.compile("[C-S].*").matcher(flower.getCommonName()).matches())
+                .filter(flower -> Pattern.compile("^[C-S].*").matcher(flower.getCommonName()).matches())
                 .filter(flower -> flower.isShadePreferred())
                 .peek(flower -> flower.getFlowerVaseMaterial()
                         .stream()
@@ -247,9 +247,9 @@ public class Main {
                         .map(animal -> Map.entry(animal, owner.getPerson())))
                 .filter(animalPersonEntry ->
                         ("Female".equals(animalPersonEntry.getValue().getGender())
-                            && !Pattern.compile("[L-Z].*").matcher(animalPersonEntry.getKey().getBread()).matches())
+                            && !Pattern.compile("^[L-Z].*").matcher(animalPersonEntry.getKey().getBread()).matches())
                         || ("Male".equals(animalPersonEntry.getValue().getGender())
-                            && !Pattern.compile("[A-K].*").matcher(animalPersonEntry.getKey().getBread()).matches())
+                            && !Pattern.compile("^[A-K].*").matcher(animalPersonEntry.getKey().getBread()).matches())
                         || animalPersonEntry.getKey().getAge() > 35
                         || Period.between(animalPersonEntry.getValue().getDateOfBirth(), nowDate).getYears() < 18)
                 .collect(Collectors.groupingBy(Map.Entry::getValue,
