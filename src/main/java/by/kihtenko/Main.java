@@ -236,7 +236,6 @@ public class Main {
                         .collect(Collectors.toList()))
                 .map(flower -> flower.getPrice() + flower.getWaterConsumptionPerDay() * waterFor5years)
                 .collect(summingDouble(f -> f)));
-        ;
     }
 
     private static void task16() throws IOException {
