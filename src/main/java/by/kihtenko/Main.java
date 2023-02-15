@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -178,7 +179,50 @@ public class Main {
 
     private static void task14() throws IOException {
         List<Car> cars = Util.getCars();
-        //        Продолжить...
+        final double COST_KILOGRAM = 7.14 * 0.001;
+        final Map<Integer, Predicate<Car>> PREDICATES_GROUP = new LinkedHashMap<>()
+        {
+            {
+                put(1, (c) -> "Jaguar".equals(c.getCarMake()) || "White".equals(c.getColor()));
+                put(2, (c) -> c.getMass() < 1500 &&
+                            ("BMW".equals(c.getCarMake()) || "Lexus".equals(c.getCarMake())
+                                || "Chrysler".equals(c.getCarMake()) || "Toyota".equals(c.getCarMake())));
+                put(3, (c) -> ("Black".equals(c.getColor()) && c.getMass() > 4000)
+                            || "GMC".equals(c.getCarMake()) || "Dodge".equals(c.getCarMake()));
+                put(4, (c) -> c.getReleaseYear() < 1982 || "Civic".equals(c.getCarModel())
+                            || "Cherokee".equals(c.getCarModel()));
+                put(5, (c) -> !("Yellow".equals(c.getColor()) || "Red".equals(c.getColor())
+                                || "Green".equals(c.getColor()) ||  "Blue".equals(c.getColor()))
+                                || c.getPrice() > 40000);
+                put(6, (c) -> c.getVin() != null && c.getVin().contains("59"));
+                put(7, (car) -> true);
+            }
+        };
+
+        double sum = cars.stream()
+                .map(car -> Map.entry(PREDICATES_GROUP.entrySet().stream()
+                        .filter(entry -> entry.getValue().test(car))
+                        .findFirst()
+                        .get().getKey(), car))
+                //  stream pairs <NumberOfGroup(1-7), Car>
+                .filter(entry -> entry.getKey() < 7)
+                .collect(Collectors.groupingBy(Map.Entry::getKey,
+                        Collectors.mapping(Map.Entry::getValue, Collectors.toList())))
+
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(Map.Entry::getValue)
+                .map(carsIngroup -> Map.entry(carsIngroup,
+                        COST_KILOGRAM * carsIngroup.stream()
+                                .collect(Collectors.summarizingInt(Car::getMass))
+                                .getSum()))
+                .peek(valueGroupCarCost -> System.out.println(valueGroupCarCost.getValue()))
+
+                .mapToDouble(groupCarCost -> groupCarCost.getKey().stream()
+                        .collect(Collectors.summarizingDouble(Car::getPrice))
+                        .getSum())
+                .sum();
+        System.out.printf("%f",sum);
     }
 
     private static void task15() throws IOException {
